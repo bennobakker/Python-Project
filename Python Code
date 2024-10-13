@@ -1,0 +1,69 @@
+import pandas as pd
+import random
+import tkinter as tk
+from tkinter import messagebox
+from tkinter import scrolledtext
+
+music_data = pd.read_excel(r'C:\Users\benno\OneDrive\Documenten\Downloads\Spotify\tracks_database.xlsx.xlsx')
+
+genres = ['rock', 'pop', 'Hip Hop', 'metal', 'dance', 'jazz', 'Indie Pop', 'R&B', 'country', 'classical']
+
+def recommend_songs(mood, genre, num_songs=10):
+    filtered_data = music_data[music_data['track_genre'].str.lower() == genre.lower()]
+    if mood == 'happy':
+        filtered_data = filtered_data[filtered_data['valence'] > 0.6]
+    elif mood == 'sad':
+        filtered_data = filtered_data[filtered_data['valence'] < 0.4]
+    elif mood == 'energetic':
+        filtered_data = filtered_data[filtered_data['energy'] > 0.7]
+    elif mood == 'calm':
+        filtered_data = filtered_data[filtered_data['energy'] < 0.5]
+    else:
+        return None
+    
+    if filtered_data.empty:
+        return None
+    
+    selected_songs = filtered_data.sample(n=min(num_songs, len(filtered_data)))
+    
+    return [
+        {
+            'artist': song['artists'],
+            'track_name': song['track_name'],
+            'popularity': song['popularity']
+        }
+        for _, song in selected_songs.iterrows()
+    ]
+
+def on_genre_button_click(genre):
+    mood = mood_var.get()
+    if mood not in ['happy', 'sad', 'energetic', 'calm']:
+        messagebox.showerror("Error", "Please select the mood you feel like listening to: happy, sad, energetic, or calm.")
+        return
+    
+    recommended_songs = recommend_songs(mood, genre)
+    if recommended_songs:
+        songs_message = "\n\n".join([f"\u266B {song['track_name']}\n    Artist: {song['artist']}\n    Popularity: {song['popularity']}" for song in recommended_songs])
+        result_window = tk.Toplevel(root)
+        result_window.title("Recommended Songs")
+        text_area = scrolledtext.ScrolledText(result_window, wrap=tk.WORD, width=50, height=20, font=("Helvetica", 12))
+        text_area.insert(tk.INSERT, f"Recommended Songs:\n\n{songs_message}")
+        text_area.config(state='disabled')
+        text_area.pack(pady=10, padx=10)
+
+root = tk.Tk()
+root.title("Music Recommender")
+root.geometry("400x600")
+root.configure(bg='#f0f0f0')
+
+tk.Label(root, text="Select your mood:", font=("Helvetica", 14), bg='#f0f0f0').pack(pady=10)
+mood_var = tk.StringVar()
+mood_options = ['happy', 'sad', 'energetic', 'calm']
+for mood in mood_options:
+    tk.Radiobutton(root, text=mood.capitalize(), variable=mood_var, value=mood, font=("Helvetica", 12), bg='#f0f0f0').pack(anchor='w', padx=20)
+
+tk.Label(root, text="Select your preferred genre:", font=("Helvetica", 14), bg='#f0f0f0').pack(pady=10)
+for genre in genres:
+    tk.Button(root, text=genre.capitalize(), command=lambda g=genre: on_genre_button_click(g), font=("Helvetica", 12), bg='#007acc', fg='white').pack(fill='x', padx=20, pady=5)
+
+root.mainloop()
