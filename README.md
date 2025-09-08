@@ -10,3 +10,6 @@ The project will use a dataset called Spotify Tracks Dataset on Kaggle. This dat
 
 iv. Expected Outcome:
 A code that gives 10 songs based on your mood and favourite genre, including a popularity scale going from 1-100 based on how well-known the song is.
+
+In order for the code to run, the following file must be downloaded
+[tracks_database.xlsx.xlsx](https://github.com/user-attachments/files/22212817/tracks_database.xlsx.xlsx)
